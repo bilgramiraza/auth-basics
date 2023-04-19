@@ -25,6 +25,34 @@ app.set('views',__dirname);
 app.set('view engine', 'ejs');
 
 app.use(session({secret:'cats', resave:false, saveUninitialized: true}));
+
+passport.use(
+  new LocalStrategy(async(username,password,done)=>{
+    try{
+      const user = User.findOne({username});
+
+      if(!user) return done(null, false, {message:'Incorrect Username'});
+      
+      if(user.password !== password)  return done(null, false, {message:'Incorrect Password'});
+
+      return done(null,user);
+    }catch(err){
+      return done(err);
+    }
+  })
+);
+passport.serializeUser(function(user,done){
+  done(null, user.id);
+});
+passport.deserializeUser(async function(id,done){
+  try{
+    const user = await User.findById(id);
+    done(null, user);
+  }catch(err){
+    done(err);
+  }
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.urlencoded({extended:false}));
