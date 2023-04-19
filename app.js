@@ -12,7 +12,7 @@ const db = mongoose.connection;
 db.on('error',console.error.bind(console,'mongo connection error'));
 
 const User = mongoose.model(
-  'User',
+  'user',
   new Schema({
     username:{type:String, required:true},
     password:{type:String, required:true},
@@ -29,5 +29,19 @@ app.use(passport.session());
 app.use(express.urlencoded({extended:false}));
 
 app.get('/', (req,res)=> res.render('index'));
+app.get('/sign-up', (req,res)=>res.render('signUpForm')); 
+
+app.post('/sign-up', async (req, res, next) =>{
+  try{
+    const user = new User({
+      username:req.body.username,
+      password:req.body.password,
+    });
+    const result = await user.save();
+    return res.redirect('/');
+  }catch(err){
+    return next(err);
+  }
+});
 
 app.listen(3000, ()=> console.log('app listening on Port 3000'));
