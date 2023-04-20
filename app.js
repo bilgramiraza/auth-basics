@@ -57,10 +57,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.urlencoded({extended:false}));
 
-app.use(function(res,req,next){
-  res.locals.currentUser = req.user;
-  next();
-});
+//app.use(function(res,req,next){
+//res.locals.currentUser = req.user;
+//next();
+//});
 
 app.get('/', (req,res)=> res.render('index',{ user:req.user }));
 
