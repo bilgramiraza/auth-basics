@@ -6,6 +6,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 require('dotenv').config();
+const bcrypt = require('bcryptjs');
 
 const mongoDb = process.env.MONGODB_URI;
 mongoose.connect(mongoDb,{useUnifiedTopology:true, useNewUrlParser: true});
@@ -33,9 +34,10 @@ passport.use(
 
       if(!user) return done(null, false, {message:'Incorrect Username'});
       
-      if(user.password !== password)  return done(null, false, {message:'Incorrect Password'});
+      const passwordCheck = await bcrypt.compare(password, user.password);
+      if(!passwordCheck)  return done(null, false, {message:'Incorrect Password'});
+      return done(null, user);
 
-      return done(null,user);
     }catch(err){
       return done(err);
     }
@@ -67,9 +69,10 @@ app.get('/', (req,res)=> res.render('index',{ user:req.user }));
 app.get('/sign-up', (req,res)=>res.render('signUpForm')); 
 app.post('/sign-up', async (req, res, next) =>{
   try{
+    const hashedPassword = await bcrypt.hash(req.body.password,10);
     const user = new User({
       username:req.body.username,
-      password:req.body.password,
+      password:hashedPassword,
     });
     const result = await user.save();
     return res.redirect('/');
